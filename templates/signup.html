@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            width: 85%;
+            max-width: 700px;
+            background: #1c1c1c;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-section {
+            width: 45%;
+            background: url('/static/Autonomous driving button for HMI.gif') no-repeat center center;
+            background-size: cover;
+        }
+
+        .form-section {
+            width: 55%;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-align: center;
+        }
+
+        .social-login {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .google-btn {
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+            width: 100%;
+            padding: 0.7rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .google-btn img {
+            height: 18px;
+            margin-right: 0.7rem;
+        }
+
+        .google-btn span {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .google-btn:hover {
+            background-color: #f1f1f1;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.65rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .form-input::placeholder {
+            color: #888;
+        }
+
+        .cta-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #8d52ff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            background-color: #6d3fd1;
+        }
+
+        .register-option {
+            margin-top: 0.9rem;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .register-option a {
+            color: #8d52ff;
+            text-decoration: none;
+        }
+
+        .register-option a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                max-width: 100%;
+                height: auto;
+            }
+
+            .image-section, .form-section {
+                width: 100%;
+            }
+
+            .image-section {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="image-section"></div>
+
+        <div class="form-section">
+            <img src="/static/query1.png" width="80px" height="100%">
+            <h1>Create Your Account</h1>
+            <div class="social-login">
+                <button class="google-btn">
+                    <img src="/static/7123025_logo_google_g_icon.svg" alt="Google Logo">
+                    <span>Continue with Google</span>
+                </button>
+            </div>
+
+            <form id="signupForm" action="/signup" method="POST">
+                <input type="text" name="name" class="form-input" placeholder="Name" required>
+                <input type="email" name="email" class="form-input" placeholder="Email address" required>
+                <input type="password" name="password" class="form-input" placeholder="Password (min 8 chars)" required>
+                <input type="password" name="confirm_password" class="form-input" placeholder="Confirm Password" required>
+                <button type="submit" class="cta-btn">Sign Up</button>
+            </form>
+
+            <div class="register-option">
+                Already have an account? <a href="/login">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

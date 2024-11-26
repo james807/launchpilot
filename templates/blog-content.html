@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ post.title }}</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  /* General Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  body {
+    background-color: #121212;
+    color: #f0f0f0;
+    line-height: 1.6;
+  }
+
+  /* Navbar */
+  .navbar {
+    background-color: #1a1a1a;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .navbar .logo {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  /* Container Layout */
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 2rem auto;
+    gap: 2rem;
+  }
+
+  /* Blog Content */
+  .blog-content-container {
+    flex: 3;
+    padding: 2rem;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .back-button {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #ffffff;
+    background-color: #333333;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s;
+  }
+
+  .back-button:hover {
+    background-color: #555555;
+  }
+
+  .blog-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .blog-meta {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+    margin-bottom: 2rem;
+  }
+
+  .blog-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .blog-content {
+    font-size: 1.1rem;
+    color: #c0c0c0;
+    line-height: 1.8;
+  }
+
+  .button-container {
+    width: auto;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background-color: #252525;
+    border-radius: 10px;
+    gap: 0.5rem;
+  }
+
+  .upvote-button, .share-button, .viewproject-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #333333;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .upvote-button:hover, .share-button:hover, .viewproject-button:hover {
+    background-color: #555555;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+      padding: 1rem;
+    }
+  }
+ 
+  .related-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between each related post */
+}
+
+.related-post {
+    display: flex;
+    align-items: center; /* Align image and title vertically */
+    background-color: #2a2a3a; /* Background color for the post container */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px; /* Padding inside the container */
+    transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+.related-post:hover {
+    background-color: #3a3a4a; /* Darker background on hover */
+}
+
+.related-post a {
+    display: flex;
+    align-items: center; /* Ensure content inside the link aligns */
+    text-decoration: none; /* Remove underline */
+}
+
+.related-post-image {
+    width: 50px; /* Width of the image */
+    height: 50px; /* Height of the image */
+    border-radius: 4px; /* Rounded corners for the image */
+    margin-right: 10px; /* Space between image and title */
+    flex-shrink: 0; /* Prevent image from shrinking */
+}
+
+.related-post-title {
+    color: #ccc; /* Text color for the title */
+    font-size: 16px; /* Font size for the title */
+    line-height: 1.2; /* Set line height */
+}
+
+.related-post-title:hover {
+    color: #fff; /* Change color on hover */
+}
+
+</style>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">LaunchPilot</div>
+  </header>
+
+   <!-- Main Content Container -->
+   <div class="container">
+    <!-- Blog Content Container -->
+    <div class="blog-content-container">
+      <h1 class="blog-title">{{ post.title }}</h1>
+      <p class="blog-meta">By {{ post.project_name }} • {{ post.date }}</p>
+      <img src="{{ post.image_url }}" alt="Blog Post Image" class="blog-image">
+      <div class="button-container">
+        <button class="upvote-button" aria-label="Upvote">👍 Upvote</button>
+        <button class="share-button" aria-label="Share">🔗 Share</button>
+        <button class="viewproject-button" aria-label="Go to Project">Go to Project</button>
+      </div>
+      <br>
+
+      <div class="blog-content">
+        {{ post.content|safe }} <!-- Use 'safe' filter to render HTML content -->
+      </div>
+
+      
+    </div>
+
+   <!-- Top Read This Week Section -->
+<aside class="top-read">
+  <h3>Posts Related to {{ post.title }}</h3>
+  <div class="related-posts">
+      {% for related_post in related_posts %}
+          <div class="related-post">
+              <a href="{{ url_for('view_post', post_title=related_post.title) }}" class="related-post-link">
+                  <img src="{{ related_post.image_url }}" alt="Post Image" class="related-post-image">
+                  <p class="related-post-title">{{ related_post.title }}</p>
+              </a>
+          </div>
+      {% else %}
+          <div class="related-post">
+              <span>No related posts available.</span>
+          </div>
+      {% endfor %}
+  </div>
+</aside>
+
+
+
+
+
+
+  <div>
+
+</body>
+<script>
+  // Assuming you have a way to get the current post URL
+const currentPostUrl = window.location.href; // Get the URL of the current post
+
+document.querySelector('.share-button').addEventListener('click', () => {
+    // Copy the URL to the clipboard
+    navigator.clipboard.writeText(currentPostUrl)
+        .then(() => {
+            alert('Post link copied to clipboard!'); // Notify the user
+        })
+        .catch(err => {
+            console.error('Error copying text: ', err);
+        });
+});
+
+</script>
+</html>

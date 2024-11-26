@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaunchPilot Projects</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"></script>
+  <style>
+    /* General reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      line-height: 1.6;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #1a1a1a;
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .navbar .logo {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .navbar nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .navbar nav ul li a {
+      color: #c0c0c0;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .navbar nav ul li a:hover {
+      color: #ffffff;
+    }
+
+    .auth-buttons .login, .auth-buttons .signup {
+      padding: 0.5rem 1rem;
+      margin-left: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .auth-buttons .login {
+      background-color: #333333;
+      color: #ffffff;
+    }
+
+    .auth-buttons .signup {
+      background-color: #007bff;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+
+    .search-bar input {
+      padding: 0.75rem;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background-color: #222;
+      color: #f0f0f0;
+      width: 400px; /* Increased width */
+      transition: border-color 0.3s;
+    }
+
+    .search-bar input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    .search-bar button {
+      padding: 0.75rem 1.5rem; /* Increased padding */
+      margin-left: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* Hero Section */
+    .hero {
+      background-image: url('/502c7fc4-16bc-42ff-9334-9df896d92790.jpg'); /* Replace with the path to your background image */
+      background-size: cover;
+      background-position: center;
+      padding: 5rem 2rem;
+      display: flex;
+      align-items: center;
+      color: #f0f0f0;
+      border-radius: 12px;
+      margin: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(138, 43, 226, 0.8) 50%, rgba(18, 18, 18, 0.4) 80%, rgba(18, 18, 18, 0));
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #c0c0c0;
+      margin-top: 0.5rem;
+    }
+
+    /* Projects Section */
+    .projects {
+      padding: 2rem;
+      margin: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .projects h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .posts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .project-card {
+  position: relative;
+  background-color: #252525;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #f0f0f0;
+  text-align: left;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  width: 250px;  /* Fixed width */
+  height: 350px; /* Fixed height */
+  overflow: hidden; /* Prevent overflow */
+  cursor: pointer;
+}
+
+    .share-button {
+      position: absolute; /* Change to absolute positioning */
+      bottom: 1rem; /* Distance from the bottom */
+      right: 1rem; /* Distance from the right */
+      display: inline-flex;
+      align-items: center; /* Correct 'align-items' from 'righ' to 'center' */
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .share-button:hover {
+      background-color: #555555;
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .project-card img {
+  width: 100%;
+  height: 150px; /* Set a fixed height */
+  object-fit: cover; /* Ensures the aspect ratio is maintained */
+  border-radius: 8px;
+}
+
+    .project-card h4 {
+      margin-top: 0.75rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .project-card .author {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+      margin-top: 0.5rem;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: #1a1a1a;
+      padding: 3rem 2rem;
+      color: #f0f0f0;
+      text-align: center;
+      border-top: 1px solid #333;
+    }
+
+    .footer-content {
+      max-width: 600px;
+      margin: 0 auto;
+      margin-bottom: 2rem;
+    }
+
+    .footer-content p {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-content button {
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      margin: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .footer-links h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .footer-links a {
+      color: #a0a0a0;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: #ffffff;
+    }
+    
+    .readMorebtn {
+      background-color: #ffffff; /* Primary purple color */
+      color: #000000;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .readMorebtn:hover {
+      background-color: #007bff; /* A shade darker */
+      color: #ffffff; /* Change text color */
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-container">
+      <div class="logo">LaunchPilot</div>
+      <nav>
+        <ul>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="auth-buttons">
+        <button class="login">Login</button>
+        <button class="signup">Sign Up</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h2>Empowering Your Ideas</h2>
+      <p>Connect with projects that shape the future. Explore, engage, and elevate your innovation journey.</p>
+    </div>
+  </section>
+
+  <section class="search-bar">
+    <input type="text" id="search-input" placeholder="Search for projects...">
+    <button id="search-button">Search</button>
+  </section>
+
+  <section id="projects" class="projects">
+    <h3>Latest Projects</h3>
+    <div class="posts-container" id="posts-container">
+      <!-- Project cards will be dynamically populated here -->
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <h3>Stay Connected</h3>
+      <p>Subscribe to our newsletter for the latest updates!</p>
+      <input type="email" placeholder="Your email address" />
+      <button>Subscribe</button>
+    </div>
+    <div class="footer-links">
+      <div>
+        <h4>Quick Links</h4>
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div>
+        <h4>Social Media</h4>
+        <a href="#">Facebook</a>
+        <a href="#">Twitter</a>
+        <a href="#">Instagram</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Fetch projects from the backend
+    async function fetchProjects() {
+        try {
+            const response = await fetch('/fetch_community_projects');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+            alert('Failed to fetch projects. Please try again later.');
+            return [];
+        }
+    }
+
+    // Display projects in the DOM
+    function displayProjects(projects) {
+        const postsContainer = document.getElementById('posts-container');
+        postsContainer.innerHTML = ''; // Clear previous projects
+
+        if (projects.length === 0) {
+            postsContainer.innerHTML = '<p>No projects found.</p>'; // Feedback for no results
+            return;
+        }
+
+        projects.forEach(project => {
+            const projectCard = document.createElement('div');
+            projectCard.classList.add('project-card');
+            projectCard.onclick = () => handleProjectClick(project.name); // Use the project name directly
+
+            // Limit description to six words
+            const oneSentenceDescription = project.project_description.split(' ').slice(0, 6).join(' ') + '.';
+
+            projectCard.innerHTML = `
+                <img src="${project.image_url}" alt="${project.name}" style="height: 200px; object-fit: cover;">
+                <h4>${project.name}</h4>
+                <p>${oneSentenceDescription}</p>
+                <br>
+                <button class="share-button" data-name="${project.name}" aria-label="Share ${project.name}">Share</button>
+            `;
+
+            // Append the project card to the container
+            postsContainer.appendChild(projectCard);
+
+            // Add event listener for the share button
+            const shareButton = projectCard.querySelector('.share-button');
+            shareButton.addEventListener('click', (event) => handleShareButtonClick(event, project.name, oneSentenceDescription));
+        });
+    }
+
+    async function handleProjectClick(projectName) {
+    try {
+        const response = await fetch(`/fetch_community_project?name=${encodeURIComponent(projectName)}`);
+        if (!response.ok) {
+            throw new Error('Project not found');
+        }
+        const projectDetails = await response.json();
+        console.log('Fetched project details:', projectDetails); // Log the details
+
+        // Check if project details were returned and have the expected properties
+        if (projectDetails && projectDetails.name) {
+            localStorage.setItem('projectDetails', JSON.stringify(projectDetails));
+            window.location.href = '/community-project.html'; // Adjust to the correct URL
+        } else {
+            throw new Error('Project details are incomplete');
+        }
+    } catch (error) {
+        console.error('Error fetching project details:', error);
+        alert('Error fetching project details. Please try again.');
+    }
+}
+
+
+    // Handle share button click
+    function handleShareButtonClick(event, projectName, description) {
+        event.stopPropagation(); // Prevent the card click event from firing
+        const shareContent = `${projectName}: ${description}`;
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(shareContent)
+            .then(() => alert('Project information copied to clipboard!'))
+            .catch(error => console.error('Error copying text:', error));
+    }
+
+    // Search functionality
+    document.getElementById('search-button').addEventListener('click', async () => {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        try {
+            const projects = await fetchProjects();
+            const filteredProjects = projects.filter(project => 
+                project.name.toLowerCase().includes(searchTerm) || 
+                project.project_description.toLowerCase().includes(searchTerm)
+            );
+            displayProjects(filteredProjects);
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+        }
+    });
+
+    // Initial load of projects
+    window.onload = async () => {
+        try {
+            const projects = await fetchProjects();
+            displayProjects(projects);
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+        }
+    };
+</script>
+
+
+
+
+
+
+
+  
+</body>
+</html>

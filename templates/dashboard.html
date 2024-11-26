@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaunchPilot</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-analytics.js"></script> <!-- Optional -->
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #0b0d15, #0a0a0f);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Floating spheres */
+        .sphere {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(140, 82, 255, 0.5);
+            filter: blur(50px);
+            animation: float 6s ease-in-out infinite, move 10s linear infinite;
+        }
+
+        .sphere1 {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 15%;
+            opacity: 0.6;
+        }
+
+        .sphere2 {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            opacity: 0.5;
+        }
+
+        .sphere3 {
+            width: 250px;
+            height: 250px;
+            top: 30%;
+            right: 10%;
+            opacity: 0.4;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15%); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes move {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+            75% { transform: translateX(-20px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Navbar */
+        .nav {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 60px);
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .nav .logo-name {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        .nav a {
+            color: #fff;
+            font-size: 1rem;
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .nav a:hover {
+            opacity: 1;
+        }
+
+        /* User profile section */
+        .nav .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav .profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .nav .profile span {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Add a community link next to the profile */
+        .nav .community {
+            margin-right: auto;
+        }
+
+        .nav .community a {
+            color: #fff;
+            font-size: 1rem;
+            margin-right: 30px;
+            text-decoration: none;
+        }
+
+        .nav .community a:hover {
+            opacity: 1;
+        }
+
+        /* Welcome text and search bar */
+        .welcome-message {
+            margin: 20px;
+            text-align: center;
+            font-size: 30px;
+        }
+
+        /* Search bar */
+        .search-bar {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px; /* Reduced space between buttons */
+            position: relative; /* Ensure relative positioning */
+            z-index: 10; /* Ensure it is above floating elements */
+        }
+
+        .search-bar input {
+            padding: 12px;
+            font-size: 1rem;
+            width: 400px; /* Adjust as needed */
+            border: none;
+            border-radius: 8px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .search-bar button {
+            padding: 12px 16px; /* Adjust padding if needed */
+            background-color:  #000000; /* Same color as before */
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-bar button:hover {
+            background-color: #6d3fd1; /* Darker shade on hover */
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #222;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+            color: #fff;
+        }
+         /* Modal Inputs */
+         .modal input, .modal textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #555; /* Lighter border for inputs */
+            background-color: #333; /* Dark background for inputs */
+            color: #fff; /* White text */
+        }
+
+        .modal button {
+            padding: 10px 20px;
+            background-color: #8d52ff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal button:hover {
+            background-color: #6d3fd1; /* Darker shade on hover */
+        }
+
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* When modal is active, hide the search bar */
+        .modal-active .search-bar {
+            display: none;
+        }
+
+        /* Project Cards */
+        .project-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px;
+            gap: 20px;
+        }
+
+        .project-card {
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 200px; /* Set width for cards */
+            text-align: center;
+            transition: transform 0.3s; /* Add a transition for hover effect */
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px); /* Slightly raise the card on hover */
+        }
+
+        .project-card img {
+            width: 100%; /* Full width */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        .project-title {
+            padding: 10px;
+            font-weight: bold;
+            color: #fff; /* White text color for contrast */
+        }
+
+        .project-link, .project-category {
+            color: #ccc; /* Light gray for secondary text */
+            font-size: 0.9em; /* Slightly smaller font size */
+            margin: 5px 0; /* Space between lines */
+        }
+
+        .project-link a {
+            color: #007bff; /* Link color */
+            text-decoration: none;
+        }
+
+        .project-link a:hover {
+            text-decoration: underline; /* Underline on hover */
+        }hover {
+            text-decoration: underline;
+        }
+        /* Footer */
+        footer {
+            position: absolute;
+            bottom: 30px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        .project-card {
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+    </style>
+</head>
+
+
+<body>
+    <!-- Navbar -->
+    <div class="nav">
+        <div class="logo-name">LAUNCHPILOT</div>
+
+        <!-- Community Link -->
+        <div class="community">
+            <a href="/community_dashboard">Community</a>
+        </div>
+
+        <!-- User Profile -->
+        <div class="profile">
+            <span id="username">{{ username }}</span>
+        </div>
+    </div>
+
+    <br>
+    <br>
+    <!-- Welcome Message -->
+    <div class="welcome-message" id="welcomeMessage">
+        {% if username != 'Guest' %}
+            Welcome to LaunchPilot, {{ username }}!
+        {% else %}
+            Welcome to LaunchPilot!
+        {% endif %}
+    </div>
+
+    <br>
+    <br>
+
+    <!-- Search bar and button -->
+    <div class="search-bar">
+        <input type="text" placeholder="Search Projects...">
+        <button class="launch-project-button" onclick="openModal()">Launch New Project</button>
+    </div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add New Project</h2>
+            <form id="addProjectForm">
+                <label for="projectName">Project Name:</label>
+                <input type="text" id="projectName" required>
+            
+                <label for="projectLink">Project Link:</label>
+                <input type="url" id="projectLink" required>
+            
+                <label for="surveyLink">Survey Link:</label>
+                <input type="url" id="surveyLink" required>
+            
+                <label for="category">Category:</label>
+                <input type="text" id="category" required>
+            
+                <label for="projectImage">Project Image:</label>
+                <input type="file" id="projectImage" accept="image/*" required>
+            
+                <!-- Inside the form modal -->
+                <label for="projectDescription">Project Description:</label>
+                <textarea id="projectDescription" rows="4" required></textarea> <!-- New description field -->
+
+            
+                <button type="submit">Add Project</button>
+            </form>
+            
+        </div>
+    </div>
+
+    <div id="projects-container">
+        <h3>Your Projects:</h3>
+    
+        <div class="project-container">
+            {% if projects %}
+                {% for project in projects %}
+                <div class="project-card" onclick="openProjectDetails('{{ project.name }}')">
+                    <img src="{{ project.image_url }}" alt="{{ project.name }}">
+                    <div class="project-title">{{ project.name }}</div>
+                </div>
+                
+                {% endfor %}
+            {% else %}
+                <p>No projects found.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+   
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2024 LaunchPilot. All Rights Reserved.
+    </footer>
+
+    <script>
+        // Function to open the modal
+        function openModal() {
+            const modal = document.getElementById("myModal");
+            if (modal) {
+                modal.style.display = "block";
+                document.body.classList.add("modal-active");
+            }
+        }
+    
+        // Function to close the modal
+        function closeModal() {
+            const modal = document.getElementById("myModal");
+            if (modal) {
+                modal.style.display = "none";
+                document.body.classList.remove("modal-active");
+            }
+        }
+    
+        // Add event listener for the form submission
+        document.getElementById("addProjectForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+    
+            // Get input values
+            const projectName = document.getElementById("projectName").value;
+            const projectLink = document.getElementById("projectLink").value;
+            const surveyLink = document.getElementById("surveyLink").value;
+            const category = document.getElementById("category").value;
+            const projectImage = document.getElementById("projectImage").files[0];
+            const projectDescription = document.getElementById("projectDescription").value; // Get project description
+    
+            // Log input values for debugging
+            console.log("Project Name:", projectName);
+            console.log("Project Link:", projectLink);
+            console.log("Survey Link:", surveyLink);
+            console.log("Category:", category);
+            console.log("Project Image:", projectImage);
+            console.log("Project Description:", projectDescription); // Log project description
+    
+            // Validate inputs (ensure all fields are filled)
+            if (!projectName || !projectLink || !surveyLink || !category || !projectImage || !projectDescription) {
+                alert("Please fill in all fields.");
+                console.log("Validation failed. One or more fields are empty.");
+                return;
+            }
+    
+            // Create a FormData object to handle file uploads
+            const formData = new FormData();
+            formData.append("projectName", projectName);
+            formData.append("projectLink", projectLink);
+            formData.append("surveyLink", surveyLink);
+            formData.append("category", category);
+            formData.append("projectImage", projectImage); // Add the image file to FormData
+            formData.append("projectDescription", projectDescription); // Add the project description
+    
+            // Log FormData contents for debugging
+            for (const [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+    
+            // Send the project data to the backend
+            fetch('/add_project', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert(data.message);
+                    closeModal();  // Close the modal
+                    fetchUserProjects();  // Fetch and display updated project list
+                } else {
+                    alert("Error adding project: " + data.error);
+                    console.log("Error response from server:", data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Error adding project:", error);
+                alert("Error adding project: " + error.message);
+            });
+        });
+    
+        // Function to open project details page based on project name
+        function openProjectDetails(projectName) {
+            window.location.href = `/project/${encodeURIComponent(projectName)}`;
+        }
+    
+        // Function to display projects in the container
+        function displayProjects(projects) {
+            const projectContainer = document.getElementById("projects-container").querySelector(".project-container");
+            projectContainer.innerHTML = ""; // Clear existing projects
+    
+            projects.forEach(project => {
+                const projectCard = document.createElement("div");
+                projectCard.className = "project-card";
+                projectCard.onclick = () => openProjectDetails(project.name); // Change to use project name
+    
+                // Add project image
+                const img = document.createElement("img");
+                img.src = project.image_url; // Use the image URL from the database
+                img.alt = project.name;
+                projectCard.appendChild(img);
+    
+                // Add project title
+                const title = document.createElement("div");
+                title.className = "project-title";
+                title.innerText = project.name;
+                projectCard.appendChild(title);
+    
+                // Append project card to the container
+                projectContainer.appendChild(projectCard);
+            });
+        }
+    
+        // Function to fetch user projects from the backend
+        function fetchUserProjects() {
+            fetch('/user_projects')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.projects) {
+                        displayProjects(data.projects); // Pass the project data to display
+                    } else {
+                        console.log("No projects found or invalid response:", data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching projects:", error);
+                });
+        }
+    
+        // Fetch projects on page load
+        window.onload = fetchUserProjects;
+    </script>
+    
+    
+</body>
+</html>
